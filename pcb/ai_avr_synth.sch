@@ -8969,7 +8969,9 @@ This is the mechanical footprint for a #4 phillips button head screw. Use the ke
 <variantdefs>
 </variantdefs>
 <classes>
-<class number="0" name="default" width="0" drill="0">
+<class number="0" name="default" width="0.4064" drill="0">
+</class>
+<class number="1" name="PWR" width="0.6096" drill="0">
 </class>
 </classes>
 <parts>
@@ -9056,7 +9058,7 @@ Sam Stratter
 <instance part="U1" gate="G$1" x="26.67" y="163.83"/>
 <instance part="C1" gate="G$1" x="26.67" y="130.81"/>
 <instance part="C2" gate="G$1" x="34.29" y="130.81"/>
-<instance part="J1" gate="G$1" x="8.89" y="166.37"/>
+<instance part="J1" gate="G$1" x="8.89" y="163.83" rot="MR180"/>
 <instance part="U$1" gate="G$1" x="16.51" y="171.45"/>
 <instance part="GND1" gate="GND" x="26.67" y="151.13"/>
 <instance part="J2" gate="M06X1" x="19.05" y="92.71"/>
@@ -9125,12 +9127,12 @@ Sam Stratter
 <pinref part="U1" gate="G$1" pin="GND"/>
 <pinref part="GND1" gate="GND" pin="GND"/>
 <wire x1="26.67" y1="153.67" x2="26.67" y2="156.21" width="0.1524" layer="91"/>
-<pinref part="J1" gate="G$1" pin="1"/>
 <wire x1="26.67" y1="156.21" x2="26.67" y2="158.75" width="0.1524" layer="91"/>
-<wire x1="13.97" y1="163.83" x2="16.51" y2="163.83" width="0.1524" layer="91"/>
-<wire x1="16.51" y1="163.83" x2="16.51" y2="156.21" width="0.1524" layer="91"/>
 <wire x1="16.51" y1="156.21" x2="26.67" y2="156.21" width="0.1524" layer="91"/>
 <junction x="26.67" y="156.21"/>
+<pinref part="J1" gate="G$1" pin="2"/>
+<wire x1="13.97" y1="163.83" x2="16.51" y2="163.83" width="0.1524" layer="91"/>
+<wire x1="16.51" y1="163.83" x2="16.51" y2="156.21" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C1" gate="G$1" pin="C"/>
@@ -9273,14 +9275,14 @@ Sam Stratter
 <pinref part="GND11" gate="GND" pin="GND"/>
 </segment>
 </net>
-<net name="9V" class="0">
+<net name="9V" class="1">
 <segment>
-<pinref part="J1" gate="G$1" pin="2"/>
 <pinref part="U1" gate="G$1" pin="IN"/>
-<wire x1="13.97" y1="166.37" x2="16.51" y2="166.37" width="0.1524" layer="91"/>
 <pinref part="U$1" gate="G$1" pin="9V"/>
 <wire x1="16.51" y1="166.37" x2="19.05" y2="166.37" width="0.1524" layer="91"/>
 <wire x1="16.51" y1="171.45" x2="16.51" y2="166.37" width="0.1524" layer="91"/>
+<pinref part="J1" gate="G$1" pin="1"/>
+<wire x1="13.97" y1="166.37" x2="16.51" y2="166.37" width="0.1524" layer="91"/>
 <junction x="16.51" y="166.37"/>
 </segment>
 <segment>
@@ -9295,7 +9297,7 @@ Sam Stratter
 <pinref part="U$9" gate="G$1" pin="9V"/>
 </segment>
 </net>
-<net name="5V" class="0">
+<net name="5V" class="1">
 <segment>
 <pinref part="U1" gate="G$1" pin="OUT"/>
 <wire x1="34.29" y1="166.37" x2="36.83" y2="166.37" width="0.1524" layer="91"/>
@@ -9420,14 +9422,14 @@ Sam Stratter
 </net>
 <net name="CENTS" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="PC0(ADC0)"/>
-<wire x1="177.8" y1="171.45" x2="180.34" y2="171.45" width="0.1524" layer="91"/>
-<label x="180.34" y="171.45" size="1.27" layer="95" ratio="15" xref="yes"/>
+<pinref part="IC1" gate="G$1" pin="PC3(ADC3)"/>
+<wire x1="177.8" y1="163.83" x2="180.34" y2="163.83" width="0.1524" layer="91"/>
+<label x="180.34" y="163.83" size="1.27" layer="95" ratio="15" xref="yes"/>
 </segment>
 <segment>
-<pinref part="VR4" gate="G$1" pin="S"/>
-<wire x1="182.88" y1="82.55" x2="185.42" y2="82.55" width="0.1524" layer="91"/>
-<label x="185.42" y="82.55" size="1.27" layer="95" ratio="15" rot="R90" xref="yes"/>
+<pinref part="VR1" gate="G$1" pin="S"/>
+<wire x1="220.98" y1="82.55" x2="223.52" y2="82.55" width="0.1524" layer="91"/>
+<label x="223.52" y="82.55" size="1.27" layer="95" ratio="15" rot="R90" xref="yes"/>
 </segment>
 </net>
 <net name="OCTAVE" class="0">
@@ -9456,14 +9458,14 @@ Sam Stratter
 </net>
 <net name="WEIGHT" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="PC3(ADC3)"/>
-<wire x1="177.8" y1="163.83" x2="180.34" y2="163.83" width="0.1524" layer="91"/>
-<label x="180.34" y="163.83" size="1.27" layer="95" ratio="15" xref="yes"/>
+<pinref part="IC1" gate="G$1" pin="PC0(ADC0)"/>
+<wire x1="177.8" y1="171.45" x2="180.34" y2="171.45" width="0.1524" layer="91"/>
+<label x="180.34" y="171.45" size="1.27" layer="95" ratio="15" xref="yes"/>
 </segment>
 <segment>
-<pinref part="VR1" gate="G$1" pin="S"/>
-<wire x1="220.98" y1="82.55" x2="223.52" y2="82.55" width="0.1524" layer="91"/>
-<label x="223.52" y="82.55" size="1.27" layer="95" ratio="15" rot="R90" xref="yes"/>
+<pinref part="VR4" gate="G$1" pin="S"/>
+<wire x1="182.88" y1="82.55" x2="185.42" y2="82.55" width="0.1524" layer="91"/>
+<label x="185.42" y="82.55" size="1.27" layer="95" ratio="15" rot="R90" xref="yes"/>
 </segment>
 </net>
 <net name="LCD_RST" class="0">
@@ -9574,14 +9576,14 @@ Sam Stratter
 </net>
 <net name="BTN_BANK" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="PB1(OC1A)"/>
-<wire x1="177.8" y1="123.19" x2="180.34" y2="123.19" width="0.1524" layer="91"/>
-<label x="180.34" y="123.19" size="1.27" layer="95" ratio="15" xref="yes"/>
-</segment>
-<segment>
 <pinref part="S5" gate="G$1" pin="A@1"/>
 <wire x1="220.98" y1="142.24" x2="218.44" y2="142.24" width="0.1524" layer="91"/>
 <label x="218.44" y="142.24" size="1.27" layer="95" ratio="15" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="PB4(MISO)"/>
+<wire x1="177.8" y1="115.57" x2="180.34" y2="115.57" width="0.1524" layer="91"/>
+<label x="180.34" y="115.57" size="1.27" layer="95" ratio="15" xref="yes"/>
 </segment>
 </net>
 <net name="BTN_LOCK" class="0">
@@ -9611,14 +9613,14 @@ Sam Stratter
 </net>
 <net name="BTN_EXTRA" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="PB4(MISO)"/>
-<wire x1="177.8" y1="115.57" x2="180.34" y2="115.57" width="0.1524" layer="91"/>
-<label x="180.34" y="115.57" size="1.27" layer="95" ratio="15" xref="yes"/>
-</segment>
-<segment>
 <pinref part="S7" gate="G$1" pin="A@1"/>
 <wire x1="220.98" y1="121.92" x2="218.44" y2="121.92" width="0.1524" layer="91"/>
 <label x="218.44" y="121.92" size="1.27" layer="95" ratio="15" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="PB1(OC1A)"/>
+<wire x1="177.8" y1="123.19" x2="180.34" y2="123.19" width="0.1524" layer="91"/>
+<label x="180.34" y="123.19" size="1.27" layer="95" ratio="15" xref="yes"/>
 </segment>
 </net>
 <net name="LCD_DC" class="0">
