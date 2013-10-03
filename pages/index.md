@@ -1,9 +1,9 @@
 ---
 layout: page
-title: Acrobotic Synthesizer Kit
-tagline: Board design files and example firmware.
-github_project: Ai_Synthesizer
-full_url: https://github.com/acrobotic/Ai_Synthesizer
+title: Ai AVR Synth
+tagline: Board design files and example firmware for a MIDI Synthesizer based on the ATMega328 MCU.
+github_project: Ai_AVR_Synth
+github_user_url: https://github.com/acrobotic
 ---
 {% include JB/setup %}
-{% include PROJECT.md %}
+{% include INCLUDE.md %}
