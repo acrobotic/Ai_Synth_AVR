@@ -3818,8 +3818,8 @@
 &lt;/p&gt;</description>
 <wire x1="-0.762" y1="1.397" x2="-1.778" y2="1.397" width="0.2032" layer="21"/>
 <circle x="0" y="0" radius="2.5" width="0.2032" layer="21"/>
-<pad name="1" x="1.27" y="0" drill="0.7" diameter="1.651"/>
-<pad name="2" x="-1.27" y="0" drill="0.7" diameter="1.651"/>
+<pad name="A" x="1.27" y="0" drill="0.7" diameter="1.651"/>
+<pad name="C" x="-1.27" y="0" drill="0.7" diameter="1.651"/>
 <text x="-3.175" y="-4.445" size="1.27" layer="25" font="vector" ratio="15">&gt;NAME</text>
 </package>
 <package name="CRYSTAL-HC49S">
@@ -4547,8 +4547,8 @@ design rules under a new name.</description>
 </polygon>
 <contactref element="U2" pad="4"/>
 <contactref element="U1" pad="GND"/>
-<contactref element="C1" pad="2"/>
-<contactref element="C2" pad="2"/>
+<contactref element="C1" pad="C"/>
+<contactref element="C2" pad="C"/>
 <contactref element="S1" pad="B@1"/>
 <contactref element="IC1" pad="22"/>
 <contactref element="IC1" pad="8"/>
@@ -4581,7 +4581,7 @@ design rules under a new name.</description>
 </signal>
 <signal name="9V" class="1">
 <contactref element="U1" pad="IN"/>
-<contactref element="C1" pad="1"/>
+<contactref element="C1" pad="A"/>
 <contactref element="U2" pad="8"/>
 <wire x1="9.144" y1="49.53" x2="11.811" y2="47.244" width="0.6096" layer="16"/>
 <wire x1="11.811" y1="47.244" x2="54.61" y2="47.244" width="0.6096" layer="16"/>
@@ -4594,7 +4594,7 @@ design rules under a new name.</description>
 </signal>
 <signal name="5V" class="1">
 <contactref element="U1" pad="OUT"/>
-<contactref element="C2" pad="1"/>
+<contactref element="C2" pad="A"/>
 <contactref element="R1" pad="P$2"/>
 <contactref element="IC1" pad="7"/>
 <contactref element="IC1" pad="21"/>
