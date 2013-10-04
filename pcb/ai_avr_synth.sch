@@ -8199,11 +8199,11 @@ KS-S stereo microphone/headphone jack&lt;p&gt;
 <wire x1="-3.386" y1="-0.889" x2="-4.148" y2="-0.889" width="0.1524" layer="51"/>
 <wire x1="-3.386" y1="0.889" x2="-2.116" y2="0.889" width="0.1524" layer="51"/>
 <wire x1="-0.973" y1="-0.889" x2="-2.116" y2="-0.889" width="0.1524" layer="51"/>
-<pad name="1" x="-5.08" y="0" drill="1.5" diameter="2.54"/>
-<pad name="5" x="0" y="2.54" drill="1.5"/>
-<pad name="4" x="0" y="-2.54" drill="1.5"/>
-<pad name="2" x="0" y="-5.08" drill="1.5"/>
-<pad name="3" x="0" y="5.08" drill="1.5"/>
+<pad name="GND" x="-5.08" y="0" drill="1.5" diameter="2.54"/>
+<pad name="RSH" x="0" y="2.54" drill="1.5"/>
+<pad name="TSH" x="0" y="-2.54" drill="1.5"/>
+<pad name="TIP" x="0" y="-5.08" drill="1.5"/>
+<pad name="RNG" x="0" y="5.08" drill="1.5"/>
 <text x="3.09" y="-2.731" size="1.27" layer="51" ratio="15" rot="R90">3.5mm</text>
 <text x="-7.7" y="6.45" size="1.27" layer="25" font="vector" ratio="15">&gt;NAME</text>
 <hole x="-5" y="5" drill="1.5"/>
@@ -8304,14 +8304,14 @@ KS-S stereo microphone/headphone jack&lt;p&gt;
 <wire x1="-7.62" y1="3.175" x2="-7.62" y2="-4.445" width="0.254" layer="94"/>
 <circle x="6.35" y="2.54" radius="0.127" width="0.4064" layer="94"/>
 <circle x="6.35" y="-5.08" radius="0.127" width="0.4064" layer="94"/>
-<pin name="TIP" x="8.89" y="-5.08" visible="pin" length="short" direction="pas" rot="R180"/>
-<pin name="TSH" x="8.89" y="-2.54" visible="pin" length="short" direction="pas" rot="R180"/>
-<pin name="RSH" x="8.89" y="0" visible="pin" length="short" direction="pas" rot="R180"/>
-<pin name="RNG" x="8.89" y="2.54" visible="pin" length="short" direction="pas" rot="R180"/>
-<pin name="GND" x="8.89" y="5.08" visible="pin" length="short" direction="pas" rot="R180"/>
+<pin name="TIP" x="8.89" y="-5.08" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="TSH" x="8.89" y="-2.54" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="RSH" x="8.89" y="0" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="RNG" x="8.89" y="2.54" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="GND" x="8.89" y="5.08" visible="pad" length="short" direction="pas" rot="R180"/>
 <wire x1="3.81" y1="0.635" x2="3.81" y2="0" width="0.254" layer="94"/>
 <wire x1="3.81" y1="-2.54" x2="3.81" y2="-3.175" width="0.254" layer="94"/>
-<text x="-6.35" y="6.985" size="1.524" layer="95" ratio="15">&gt;NAME</text>
+<text x="-6.35" y="5.715" size="1.524" layer="95" ratio="15">&gt;NAME</text>
 </symbol>
 </symbols>
 <devicesets>
@@ -8439,11 +8439,11 @@ Stereo jack with two switches. Kycon STX3100, CUI SJ1-3555NG and/or 4UCon 05544<
 <devices>
 <device name="SJ1-3555NG" package="SJ1-3555NG">
 <connects>
-<connect gate="G$1" pin="GND" pad="1"/>
-<connect gate="G$1" pin="RNG" pad="3"/>
-<connect gate="G$1" pin="RSH" pad="5"/>
-<connect gate="G$1" pin="TIP" pad="2"/>
-<connect gate="G$1" pin="TSH" pad="4"/>
+<connect gate="G$1" pin="GND" pad="GND"/>
+<connect gate="G$1" pin="RNG" pad="RNG"/>
+<connect gate="G$1" pin="RSH" pad="RSH"/>
+<connect gate="G$1" pin="TIP" pad="TIP"/>
+<connect gate="G$1" pin="TSH" pad="TSH"/>
 </connects>
 <technologies>
 <technology name=""/>
