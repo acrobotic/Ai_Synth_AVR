@@ -136,7 +136,7 @@
 <text x="86.995" y="26.67" size="1.27" layer="21" font="vector" ratio="15">WEIGHT</text>
 <text x="59.69" y="67.31" size="1.651" layer="21" font="vector" ratio="15">Ai AVR SYNTHESIZER</text>
 <text x="90.297" y="68.199" size="0.889" layer="21" font="vector" ratio="15">v1.0</text>
-<text x="59.563" y="65.405" size="0.889" layer="21" font="vector" ratio="15">Design by: Sam Stratter (humanHardDrive)</text>
+<text x="59.69" y="65.913" size="0.889" layer="21" font="vector" ratio="15">Design by: Sam Stratter (humanHardDrive)</text>
 <text x="46.736" y="0.381" size="1.27" layer="21" font="vector" ratio="15">OSC1</text>
 <text x="54.356" y="0.381" size="1.27" layer="21" font="vector" ratio="15">OSC2</text>
 <text x="61.722" y="0.381" size="1.27" layer="21" font="vector" ratio="15">SAVE</text>
@@ -146,6 +146,7 @@
 <text x="5.334" y="63.5" size="1.778" layer="21" font="vector">+</text>
 <text x="5.207" y="56.007" size="1.778" layer="21" font="vector" rot="R270">-</text>
 <text x="0.508" y="55.499" size="1.778" layer="21" font="vector" ratio="15" rot="SR270">9V</text>
+<text x="59.69" y="64.516" size="0.889" layer="21" font="vector" ratio="15">http://acrobotic.com/avr-synthesizer</text>
 </plain>
 <libraries>
 <library name="Ai_Miscellany">
