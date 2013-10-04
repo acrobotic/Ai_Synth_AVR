@@ -8217,7 +8217,7 @@ KS-S stereo microphone/headphone jack&lt;p&gt;
 <wire x1="-2.54" y1="2.54" x2="-2.54" y2="-5.08" width="0.4064" layer="94"/>
 <wire x1="2.54" y1="-5.08" x2="2.54" y2="2.54" width="0.4064" layer="94"/>
 <wire x1="-2.54" y1="2.54" x2="2.54" y2="2.54" width="0.4064" layer="94"/>
-<text x="-2.54" y="2.54" size="1.524" layer="95" ratio="15">&gt;NAME</text>
+<text x="-2.54" y="3.175" size="1.524" layer="95" ratio="15">&gt;NAME</text>
 <pin name="1" x="5.08" y="-2.54" length="short" rot="R180"/>
 <pin name="2" x="5.08" y="0" length="short" rot="R180"/>
 </symbol>
@@ -8226,28 +8226,28 @@ KS-S stereo microphone/headphone jack&lt;p&gt;
 <wire x1="-2.54" y1="7.62" x2="-2.54" y2="-10.16" width="0.4064" layer="94"/>
 <wire x1="2.54" y1="-10.16" x2="2.54" y2="7.62" width="0.4064" layer="94"/>
 <wire x1="-2.54" y1="7.62" x2="2.54" y2="7.62" width="0.4064" layer="94"/>
-<text x="-2.54" y="7.62" size="1.524" layer="95" ratio="15">&gt;NAME</text>
-<pin name="1" x="5.08" y="-7.62" length="short" rot="R180"/>
-<pin name="2" x="5.08" y="-5.08" length="short" rot="R180"/>
-<pin name="3" x="5.08" y="-2.54" length="short" rot="R180"/>
-<pin name="4" x="5.08" y="0" length="short" rot="R180"/>
-<pin name="5" x="5.08" y="2.54" length="short" rot="R180"/>
-<pin name="6" x="5.08" y="5.08" length="short" rot="R180"/>
+<text x="-2.54" y="8.255" size="1.524" layer="95" ratio="15">&gt;NAME</text>
+<pin name="1" x="5.08" y="-7.62" visible="pin" length="short" rot="R180"/>
+<pin name="2" x="5.08" y="-5.08" visible="pin" length="short" rot="R180"/>
+<pin name="3" x="5.08" y="-2.54" visible="pin" length="short" rot="R180"/>
+<pin name="4" x="5.08" y="0" visible="pin" length="short" rot="R180"/>
+<pin name="5" x="5.08" y="2.54" visible="pin" length="short" rot="R180"/>
+<pin name="6" x="5.08" y="5.08" visible="pin" length="short" rot="R180"/>
 </symbol>
 <symbol name="1X08">
 <wire x1="2.54" y1="-12.7" x2="-2.54" y2="-12.7" width="0.4064" layer="94"/>
 <wire x1="-2.54" y1="10.16" x2="-2.54" y2="-12.7" width="0.4064" layer="94"/>
 <wire x1="2.54" y1="-12.7" x2="2.54" y2="10.16" width="0.4064" layer="94"/>
 <wire x1="-2.54" y1="10.16" x2="2.54" y2="10.16" width="0.4064" layer="94"/>
-<text x="-2.54" y="10.16" size="1.27" layer="95" ratio="15">&gt;NAME</text>
-<pin name="1" x="5.08" y="-10.16" length="short" rot="R180"/>
-<pin name="2" x="5.08" y="-7.62" length="short" rot="R180"/>
-<pin name="3" x="5.08" y="-5.08" length="short" rot="R180"/>
-<pin name="4" x="5.08" y="-2.54" length="short" rot="R180"/>
-<pin name="5" x="5.08" y="0" length="short" rot="R180"/>
-<pin name="6" x="5.08" y="2.54" length="short" rot="R180"/>
-<pin name="7" x="5.08" y="5.08" length="short" rot="R180"/>
-<pin name="8" x="5.08" y="7.62" length="short" rot="R180"/>
+<text x="-2.54" y="10.795" size="1.524" layer="95" ratio="15">&gt;NAME</text>
+<pin name="1" x="5.08" y="-10.16" visible="pin" length="short" rot="R180"/>
+<pin name="2" x="5.08" y="-7.62" visible="pin" length="short" rot="R180"/>
+<pin name="3" x="5.08" y="-5.08" visible="pin" length="short" rot="R180"/>
+<pin name="4" x="5.08" y="-2.54" visible="pin" length="short" rot="R180"/>
+<pin name="5" x="5.08" y="0" visible="pin" length="short" rot="R180"/>
+<pin name="6" x="5.08" y="2.54" visible="pin" length="short" rot="R180"/>
+<pin name="7" x="5.08" y="5.08" visible="pin" length="short" rot="R180"/>
+<pin name="8" x="5.08" y="7.62" visible="pin" length="short" rot="R180"/>
 </symbol>
 <symbol name="MIDIJACK">
 <wire x1="-7.62" y1="-7.62" x2="7.62" y2="-7.62" width="0.4064" layer="94"/>
