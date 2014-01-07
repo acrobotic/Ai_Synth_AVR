@@ -5,13 +5,13 @@ Author:
 Sam Stratter @humanHardDrive
 
 ***
-Please consider buying products from Acrobotic to help fund future Open-Source projects 
-like this! We'll always put our best effort in every project, and release all our design 
+Please consider buying products from Acrobotic to help fund future Open-Source projects
+like this! We'll always put our best effort in every project, and release all our design
 files and code for you to use.
 ***
 
 Description:
-Firmware for the AVR Synthesizer Kit (http://acrobotic.com/catalog/product/view/id/51)  
+Firmware for the AVR Synthesizer Kit (http://acrobotic.com/catalog/product/view/id/51)
 written for the ATMega328p microcontroller using the Arduino IDE v1.0.5.
 
 Using the principle of DDS, the code features:
@@ -31,7 +31,7 @@ Using the principle of DDS, the code features:
 - MIDI in
 
 License:
-The contents of this file are licensed under a Creative Commons Attribution-ShareAlike 3.0 
+The contents of this file are licensed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 *
 ****************************************************************/
@@ -77,6 +77,27 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 #define LFOAMNT_PIN  A2
 #define ARPSPD_PIN   A1
 
+//MIDI Commands
+#define NOTE_ON		9
+#define NOTE_OFF	8
+#define AFTERTOUCH	13
+#define CC			11
+#define PC			12
+#define PITCH_WHEEL	14
+
+//MIDI CC
+#define CC_osc1WaveForm		0x77
+#define CC_osc2WaveForm		0x76
+#define CC_cents			0x0E
+#define CC_semis			0x0F
+#define CC_octave			0x10
+#define CC_weight			0x11
+
+#define CC_lfoWaveForm	0x72
+#define CC_lfoRoute		0x73
+#define CC_lfoSpeed		0x12
+
+
 #define PIN_SCE   A4 //Pin 3 on LCD
 #define PIN_RESET A5 //Pin 4 on LCD
 #define PIN_DC    13 //Pin 5 on LCD
@@ -93,16 +114,12 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 #define CENTS_MAX	50
 #define OCT_MAX		2
 #define SEMIS_MAX	12
+#define PHASE_MAX	128
 
 #define WEIGHT_MAX    16
 #define NUM_BANKS     5
 #define MAX_arp_NOTES 20
-#define MIDI_OFFSET   21
-
-//MIDI Control Change Data
-#define OSC1_WAVE_CC	0x03
-#define OSC2_WAVE_CC	0x09
-#define BANK_SELECT_CC	0x00
+#define MIDI_OFFSET   20
 
 //The DC pin tells the LCD if we are sending a command or data
 #define LCD_COMMAND 0
@@ -176,7 +193,7 @@ static const byte ASCII[][5] =
 	,{0x07, 0x08, 0x70, 0x08, 0x07} // 59 Y
 	,{0x61, 0x51, 0x49, 0x45, 0x43} // 5a Z
 	,{0x00, 0x7f, 0x41, 0x41, 0x00} // 5b [
-	,{0x02, 0x04, 0x08, 0x10, 0x20} // 5c ¥
+	,{0x02, 0x04, 0x08, 0x10, 0x20} // 5c Â¥
 	,{0x00, 0x41, 0x41, 0x7f, 0x00} // 5d ]
 	,{0x04, 0x02, 0x01, 0x02, 0x04} // 5e ^
 	,{0x40, 0x40, 0x40, 0x40, 0x40} // 5f _
@@ -297,10 +314,11 @@ volatile byte smallTimer = 0;
 volatile unsigned long millisecs = 0; //because timer0 is disabled
 
 //Detune settings
-double centMultiplier; //the number multiplied to the frequency to create cent shift
-double cents; //number of cents
-int octaveShift;
-byte semis;
+double centMultiplier = 0; //the number multiplied to the frequency to create cent shift
+double cents = 0; //number of cents
+int octaveShift = 0;
+int semis = 0;
+byte phase = 0;
 
 //LFO Settings
 volatile int centsRange = 0;
@@ -342,7 +360,8 @@ unsigned long btnExtraLastPressed = 0;
 
 //Control Settings
 int noteSelect = 44;
-boolean notePlaying = false;
+boolean notePlaying = true;
+byte currentCommand = 0;
 
 //Arpeggio Settings
 boolean arpMode = false;
@@ -365,7 +384,7 @@ int bank[NUM_BANKS][35];
 
 void setup()
 {
-	Serial.begin(31250); //The appropriate MIDI communication speed
+	//Serial.begin(31250); //The appropriate MIDI communication speed
 	//See the SerialEvent() function for more info
 	LCDInit();
 	clearLCD();
@@ -431,39 +450,35 @@ void loop()
 			if(!settingsLocked[MENU_NORM])
 			{
 				cents = map(analogRead(CENTS_PIN),ADC_MIN,ADC_MAX,-CENTS_MAX,CENTS_MAX);  //from -50 to 50 cents
-				semis = map(analogRead(SEMIS_PIN),ADC_MIN,ADC_MAX,-SEMIS_MAX,SEMIS_MAX); //from -12 to 12 semitone
+				semis = map(analogRead(SEMIS_PIN),ADC_MIN,ADC_MAX,-12,12);  //from -12 to 12 semitone
 				octaveShift = map(analogRead(OCTAVE_PIN),ADC_MIN,ADC_MAX,-OCT_MAX, OCT_MAX);  //from -2 to 2 octaves
-				weight2 = map(analogRead(WEIGHT_PIN),ADC_MIN,ADC_MAX,0,WEIGHT_MAX);  //weight of osc2 in summation
+				weight2 = map(analogRead(WEIGHT_PIN),ADC_MAX,ADC_MIN,0,WEIGHT_MAX);  //weight of osc2 in summation
 			}
 			break;
 			
 			case MENU_LFO:
 			if(!settingsLocked[MENU_LFO])
 			{
-				lfoFreq = analogRead(LFOFREQ_PIN)/10.0; //lfo frequency from 0 to 100 hertz
+				lfoFreq = analogRead(LFOFREQ_PIN)/100.0; //lfo frequency from 0 to 500 hertz
 				
 				centsRange = map(analogRead(LFOAMNT_PIN),ADC_MIN,ADC_MAX,0,CENTS_MAX);
 				semisRange = map(analogRead(LFOAMNT_PIN),ADC_MIN,ADC_MAX,0,SEMIS_MAX);
 				octaveRange = map(analogRead(LFOAMNT_PIN),ADC_MIN,ADC_MAX,0,3);
+				phaseRange = map(analogRead(LFOAMNT_PIN),ADC_MIN,ADC_MAX,-128,128);
 			}
 			break;
 			
 			case MENU_EXTRA:
 			if(!settingsLocked[MENU_EXTRA])
 			{
-				cents = map(analogRead(CENTS_PIN),ADC_MIN,ADC_MAX,-CENTS_MAX,CENTS_MAX);  //from -50 to 50 cents
-				semis = map(analogRead(SEMIS_PIN),ADC_MIN,ADC_MAX,-SEMIS_MAX,SEMIS_MAX); //from -12 to 12 semitone
-				octaveShift = map(analogRead(OCTAVE_PIN),ADC_MIN,ADC_MAX,-OCT_MAX, OCT_MAX);  //from -2 to 2 octaves
+				phase = map(analogRead(OCTAVE_PIN), ADC_MIN, ADC_MAX, -128, 128);	
 				arpSpeed = 1000.0/map(analogRead(WEIGHT_PIN),ADC_MIN,ADC_MAX,0,50); //arpSpeed is measured in milliseconds not hertz
 			}
 			break;
 		}
 	}
 
-	if(millisecs % 2 < 5)
-	{
-		noteUpdate(); //update the notes every 2 milliseconds
-	}
+	noteUpdate(); //update the notes every 2 milliseconds
 }
 
 void osc1BtnCheck()
@@ -554,7 +569,7 @@ void osc2BtnCheck()
 				{
 					lfoRoute++;
 					
-					if(lfoRoute > ROUTE_OCT)
+					if(lfoRoute > ROUTE_PHASE)
 					{
 						lfoRoute = ROUTE_NONE;
 					}
@@ -604,7 +619,7 @@ void lockBtnCheck()
 			btnLockLastPressed = millisecs;
 			btnLockPressed = false;
 		}
-	}	
+	}
 }
 
 void bankBtnCheck()
@@ -635,7 +650,7 @@ void bankBtnCheck()
 			btnBankLastPressed = millisecs;
 			btnBankPressed = false;
 		}
-	}	
+	}
 }
 
 void saveBtnCheck()
@@ -733,59 +748,155 @@ void extraBtnCheck()
 			btnExtraLastPressed = millisecs;
 			btnExtraPressed = false;
 		}
-	}	
+	}
 }
 
 //Check my included software
 void serialEvent()
 {
-	if(Serial.available() >= 3) //messages in 3 byte packets
+	byte data = Serial.read();
+	byte data1 = 0;
+	byte data2 = 0;
+	
+	if(data >= 128)
 	{
-		byte cmd = Serial.read();
-		byte note = Serial.read();
-		byte vel = Serial.read();
-
-		if(cmd >= 0x80 && cmd <= 0x8F && (rootKey == note - MIDI_OFFSET || noteSelect == note - MIDI_OFFSET)) //note off
+		byte command = (data >> 4);
+		byte channel = data - (command << 4) + 1;
+		
+		currentCommand = command;
+		
+		while(!Serial.available());
+		
+		data1 = Serial.read();
+	}
+	else
+	{
+		data1 = data;
+	}
+	
+	if(currentCommand != 12)
+	{
+		while(!Serial.available());
+		
+		data2 = Serial.read();
+	}
+	
+	
+	switch(currentCommand)
+	{
+		case NOTE_ON:
+		noteSelect = data1 - MIDI_OFFSET;
+		
+		if(!notePlaying && noteSync)
 		{
-			notePlaying = false;
+			phaccu3 = 0;
 		}
-		else if(cmd >= 0x90 && cmd <= 0x9F) //note on
+
+		notePlaying = true;
+
+		if(arpMode) //add notes to the arp array
 		{
-			noteSelect = note - MIDI_OFFSET;
-			
-			if(!notePlaying && noteSync)
+			if(arpMaxCount == 0) //if just starting arp mode
 			{
-				phaccu3 = 0;
-			}
-
-			notePlaying = true;
-
-			if(arpMode) //add notes to the arp array
-			{
-				if(arpMaxCount == 0) //if just starting arp mode
-				{
-					rootKey = note - MIDI_OFFSET; //get new root key, all notes in array are relative to this value
-				}
-				else
-				{
-					arp[arpMaxCount - 1] = noteSelect - rootKey; //calculate relative note
-				}
-				arpMaxCount++; //increment number of notes in arp array
-
-				if(arpMaxCount > MAX_arp_NOTES)
-				{
-					arpMode = false;
-					arpUpdate();
-				}
+				rootKey = noteSelect; //get new root key, all notes in array are relative to this value
 			}
 			else
 			{
-				rootKey = note - MIDI_OFFSET; //find the new root key to play the arpeggio
+				arp[arpMaxCount - 1] = noteSelect - rootKey; //calculate relative note
 			}
+			arpMaxCount++; //increment number of notes in arp array
 
-			arpTimer = millisecs;
-			arpCount = 0; //reset arp count
+			if(arpMaxCount > MAX_arp_NOTES)
+			{
+				arpMode = false;
+				arpUpdate();
+			}
 		}
+		else
+		{
+			rootKey = noteSelect; //find the new root key to play the arpeggio
+		}
+
+		arpTimer = millisecs;
+		arpCount = 0; //reset arp count
+		break;
+		
+		case NOTE_OFF:
+		if((rootKey == data1 - MIDI_OFFSET || noteSelect == data1 - MIDI_OFFSET))
+		{
+			notePlaying = false;
+		}
+		break;
+		
+		case CC:
+		Serial.println("CC");
+		Serial.println(data1);
+		Serial.println(data2);
+		Serial.println("");
+		switch(data1)
+		{
+			case CC_osc1WaveForm:
+			if(data2 > 64)
+			{
+				Serial.println("OSC1++");
+				osc1WaveForm++;
+				
+				if(osc1WaveForm > WAVE_FLAT)
+				{
+					osc1WaveForm = WAVE_SINE;
+				}
+				
+				if(settingsMenu == MENU_NORM)
+				{
+					osc1Update();
+				}
+			}
+			break;
+			
+			case CC_osc2WaveForm:
+			if(data2 > 64)
+			{
+				osc2WaveForm++;
+				
+				if(osc2WaveForm > WAVE_NOISE)
+				{
+					osc2WaveForm = WAVE_SINE;
+				}
+				
+				if(settingsMenu == MENU_NORM)
+				{
+					osc2Update();
+				}
+			}
+			break;
+			
+			case CC_lfoWaveForm:
+			break;
+			
+			case CC_cents:
+			cents = map(data2, 0, 127, -CENTS_MAX, CENTS_MAX);
+			break;
+			
+			case CC_semis:
+			semis = map(data2, 0,127, -SEMIS_MAX, SEMIS_MAX);
+			break;
+			
+			case CC_octave:
+			octaveShift = map(data2, 0, 127, -2, 2);
+			break;
+			
+			case CC_weight:
+			weight2 = map(data2,0,127,0,WEIGHT_MAX);  //weight of osc2 in summation
+			break;
+		}
+		break;
+		
+		case PC:
+		break;
+		
+		case PITCH_WHEEL:
+		cents = map(data2, 0, 127, -100, 100);
+		break;
 	}
 }
 
@@ -825,7 +936,7 @@ ISR(TIMER2_OVF_vect) {
 			
 			if(osc2WaveForm != WAVE_NOISE)
 			{
-				osc2 = ((pgm_read_byte(waveTable + icnt2 + (osc2WaveForm<<8))*weight2)>>4); //first oscillator
+				osc2 = ((pgm_read_byte(waveTable + icnt2 + (phase + dPhase) + (osc2WaveForm<<8))*weight2)>>4);
 			}
 			else
 			{
@@ -834,11 +945,11 @@ ISR(TIMER2_OVF_vect) {
 			
 			byte osc1 = ((pgm_read_byte(waveTable + icnt1 + (osc1WaveForm<<8))*weight1)>>4); //second oscillator
 			
-			OCR2A = ((osc1 + osc2)); //sum the two with weights
+			OCR2A = ((osc1 + osc2)); //sum the two with oscillators
 		}
 		else
 		{
-			OCR2A = pgm_read_byte(waveTable + icnt1 + (osc1WaveForm<<8)) ^ pgm_read_byte(waveTable + icnt2 + (osc2WaveForm<<8));
+			OCR2A = pgm_read_byte(waveTable + icnt1 + (osc1WaveForm<<8)) ^ pgm_read_byte(waveTable + icnt2 + (phase + dPhase) + (osc2WaveForm<<8));
 		}
 		
 	}
@@ -970,7 +1081,7 @@ void loadPreset(int preset)
 }
 
 void normalSettingsLCD()
-{		
+{
 	osc1Update();
 	osc2Update();
 	bankUpdate();
@@ -1036,6 +1147,48 @@ void osc1Update()
 }
 
 void lfoUpdate()
+{
+	String printStr = "LFO: ";
+	char buffer[13];
+	
+	switch(lfoWaveForm)
+	{
+		case WAVE_SINE:
+		printStr += "SINE   ";
+		break;
+		
+		case WAVE_TRI:
+		printStr += "TRI    ";
+		break;
+		
+		case WAVE_LSAW:
+		printStr += "LSAW   ";
+		break;
+		
+		case WAVE_RSAW:
+		printStr += "RSAW   ";
+		break;
+		
+		case WAVE_SQU:
+		printStr += "SQUARE ";
+		break;
+		
+		case WAVE_FLAT:
+		printStr += "FLAT   ";
+		break;
+		
+		case WAVE_NOISE:
+		printStr += "NOISE  ";
+		break;
+	}
+	
+	printStr.toCharArray(buffer, 13);
+	
+	gotoXY(0,0);
+	LCDString(buffer);
+}
+
+void midiLearnUpdate()
 {
 	String printStr = "LFO: ";
 	char buffer[13];
@@ -1158,6 +1311,10 @@ void routeUpdate()
 		printStr += "OCT  ";
 		break;
 		
+		case ROUTE_PHASE:
+		printStr += "PHASE";
+		break;
+		
 		case ROUTE_NONE:
 		printStr += "NONE ";
 		break;
@@ -1260,7 +1417,7 @@ void lockUpdate()
 	printStr.toCharArray(buffer, 13);
 	
 	gotoXY(0,3);
-	LCDString(buffer);	
+	LCDString(buffer);
 }
 
 void clearLCD()
@@ -1322,7 +1479,7 @@ void LCDInit(void) {
 	digitalWrite(PIN_RESET, HIGH);
 
 	LCDWrite(LCD_COMMAND, 0x21); //Tell LCD that extended commands follow
-	LCDWrite(LCD_COMMAND, 0xB0); //Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark
+	LCDWrite(LCD_COMMAND, 0xA0); //Set LCD Vop (Contrast): Try 0xB1(good @ 3.3V) or 0xBF if your display is too dark
 	LCDWrite(LCD_COMMAND, 0x04); //Set Temp coefficient
 	LCDWrite(LCD_COMMAND, 0x14); //LCD bias mode 1:48: Try 0x13 or 0x14
 
