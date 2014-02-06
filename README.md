@@ -23,6 +23,6 @@ All contents of this repository are licensed under a [Creative Commons Attributi
 ![alt Creative Commons License](http://i.creativecommons.org/l/by-sa/3.0/88x31.png)
 
 [1]: http://acrobotic.com/catalog/product/view/id/51 "MIDI Synthesizer"
-[Sam Stratter]: http://8bitprojects.blogspot.com "Sam Stratter"
+[Sam Stratter]: http://www.youtube.com/user/humanHardDrive "Sam Stratter"
 [@humanHardDrive]: https://github.com/humanHardDrive "@humanHardDrive"
 
