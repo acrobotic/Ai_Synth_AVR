@@ -309,12 +309,12 @@ double keyFreq[] = {
 const double refclk=31376.6;      // measured 16MHz
 
 //Phase Accumulators
-volatile unsigned long phaccu1;   // phase accumulator
-volatile unsigned long phaccu2;   // phase accumulator
-volatile unsigned long phaccu3;
-volatile unsigned long tword_mOsc1;  // dds tuning word m
-volatile unsigned long tword_mOsc2;
-volatile unsigned long tword_mLFO;
+volatile unsigned long phaccu1 = 0;   // phase accumulator
+volatile unsigned long phaccu2 = 0;   // phase accumulator
+volatile unsigned long phaccu3 = 0;
+volatile unsigned long tword_mOsc1 = 0;  // dds tuning word m
+volatile unsigned long tword_mOsc2 = 0;
+volatile unsigned long tword_mLFO = 0;
 
 volatile byte smallTimer = 0;
 volatile unsigned long millisecs = 0; //because timer0 is disabled
@@ -385,7 +385,7 @@ int settingsMenu = 0;
 boolean settingsLocked[3];
 
 //Bank Settings
-int bankSelect = 2;
+int bankSelect = 1;
 int bank[NUM_BANKS][35];
 
 void setup()
@@ -464,7 +464,7 @@ void loop()
 			{
 				cents = map(analogRead(CENTS_PIN),ADC_MIN,ADC_MAX,-CENTS_MAX,CENTS_MAX);  //from -100 to 100 cents
 				semis = map(analogRead(SEMIS_PIN),ADC_MIN,ADC_MAX,-12,12);  //from -12 to 12 semitone
-				octaveShift = map(analogRead(OCTAVE_PIN),ADC_MIN,ADC_MAX,-OCT_MAX - 1, OCT_MAX - 1);  //from -2 to 2 octaves
+				octaveShift = map(analogRead(OCTAVE_PIN),ADC_MIN,ADC_MAX,-OCT_MAX, OCT_MAX);  //from -2 to 2 octaves
 				weight2 = map(analogRead(WEIGHT_PIN),ADC_MAX,ADC_MIN,0,WEIGHT_MAX);  //weight of osc2 in summation
 			}
 			break;
@@ -515,6 +515,7 @@ void osc1BtnCheck()
 						osc1WaveForm = WAVE_SINE;
 					}
 					
+					phaccu1 = 0;
 					osc1Update();
 				}
 				break;
@@ -574,6 +575,7 @@ void osc2BtnCheck()
 						osc2WaveForm = WAVE_SINE;
 					}
 					
+					phaccu2 = 0;
 					osc2Update();
 				}
 				break;
@@ -839,17 +841,13 @@ void serialEvent()
 		}
 
 		arpTimer = millisecs;
-		arpCount = 0; //reset arp count
+		//arpCount = 0; //reset arp count
 		break;
 		
 		case NOTE_OFF:
 		if((rootKey == data1 - MIDI_OFFSET || noteSelect == data1 - MIDI_OFFSET))
 		{
 			notePlaying = false;
-			
-			OCR2A = 0;
-			phaccu1 = 0;
-			phaccu2 = 100;
 		}
 		break;
 		
@@ -1369,9 +1367,9 @@ void bankUpdate()
 {
 	String printStr = "BANK: ";
 	char buffer[13];
-	
-	String bankNum = String(bankSelect);
-	printStr += bankNum;
+		
+	printStr += bankSelect;
+	printStr += "     ";
 	
 	printStr.toCharArray(buffer, 13);
 	
