@@ -38,6 +38,8 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 
 #include "avr/pgmspace.h"
 
+#define FASTADC 1
+
 //Wave form defines
 #define WAVE_SINE  0
 #define WAVE_TRI   1
@@ -75,7 +77,7 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 
 #define LFOFREQ_PIN  A3
 #define LFOAMNT_PIN  A2
-#define ARPSPD_PIN   A1
+#define SEQSPD_PIN   A1
 
 //MIDI Commands
 #define NOTE_ON		9
@@ -97,7 +99,6 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 #define CC_lfoRoute		0x73
 #define CC_lfoSpeed		0x12
 
-
 #define PIN_SCE   A4 //Pin 3 on LCD
 #define PIN_RESET A5 //Pin 4 on LCD
 #define PIN_DC    13 //Pin 5 on LCD
@@ -118,14 +119,20 @@ Unported License http://creativecommons.org/licenses/by-sa/3.0/.
 
 #define WEIGHT_MAX    16
 #define NUM_BANKS     5
-#define MAX_arp_NOTES 20
+#define MAX_SEQ_NOTES 20
 #define MIDI_OFFSET   20
+
+#define NUM_KEYS	88
 
 //Menu Options
 #define OSC1_MAX	WAVE_FLAT
 #define OSC2_MAX	WAVE_NOISE
 #define LFO_MAX		WAVE_FLAT
 #define ROUTE_MAX	ROUTE_PHASE
+
+#define SEQ_PLAYING		0
+#define SEQ_STOPPED		1
+#define SEQ_SAMPLE		2
 
 //The DC pin tells the LCD if we are sending a command or data
 #define LCD_COMMAND 0
@@ -297,7 +304,7 @@ double keyFreq[] = {
 	130.813, 138.591, 146.832, 155.563, 164.814, 174.614, 184.997, 195.998, 207.652, 220, 233.082, 246.942,    //Octave 3
 	261.626, 277.183, 293.665, 311.127, 329.628, 349.228, 369.994, 394.995, 415.305, 440, 466.164, 493.883,    //Octave 4
 	523.251, 554.365, 587.330, 622.254, 659.255, 698.456, 739.989, 783.991, 830.609, 880, 932.328, 987.767,    //Octave 5
-	1406.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22, 1760, 1864.66, 1975.53,   //Octave 6
+	1046.50, 1108.73, 1174.66, 1244.51, 1318.51, 1396.91, 1479.98, 1567.98, 1661.22, 1760, 1864.66, 1975.53,   //Octave 6
 	2093.00, 2217.46, 2349.32, 2489.02, 2637.02, 2793.83, 2959.96, 3135.96, 3322.44, 3520, 3729.31, 3951.07,   //Octave 7
 	4186.01                                                                                                    //Octave 8
 };
@@ -316,6 +323,10 @@ volatile unsigned long tword_mOsc1 = 0;  // dds tuning word m
 volatile unsigned long tword_mOsc2 = 0;
 volatile unsigned long tword_mLFO = 0;
 
+volatile byte osc1;
+volatile byte osc2;
+volatile byte lfo;
+
 volatile byte smallTimer = 0;
 volatile unsigned long millisecs = 0; //because timer0 is disabled
 
@@ -324,7 +335,7 @@ double centMultiplier = 0; //the number multiplied to the frequency to create ce
 double cents = 0; //number of cents
 int octaveShift = 0;
 int semis = 0;
-int phase = 0;
+byte phase = 0;
 
 //LFO Settings
 volatile int centsRange = 0;
@@ -334,7 +345,7 @@ volatile int dOctave = 0;
 volatile int semisRange = 0;
 volatile int dSemis = 0;
 volatile int phaseRange = 0;
-volatile int dPhase = 0;
+volatile byte dPhase = 0;
 
 double lfoFreq = 0;
 char osc1WaveForm = WAVE_LSAW;
@@ -370,13 +381,13 @@ boolean notePlaying = false;
 byte currentCommand = 0;
 
 //Arpeggio Settings
-boolean arpMode = false;
+byte seqMode = SEQ_STOPPED;
 int rootKey = 0;
-volatile char arp[MAX_arp_NOTES];
-volatile byte arpMaxCount = 0;
-volatile byte arpCount = 0;
-volatile byte arpSpeed = 0;
-volatile unsigned long arpTimer = 0;
+volatile char seq[MAX_SEQ_NOTES];
+volatile byte seqMaxNoteCount = 0;
+volatile byte seqNoteIndex = 0;
+volatile uint16_t arpSpeed = 0;
+volatile unsigned long seqTimer = 0;
 
 boolean legato = false; //Not used, yet
 
@@ -387,6 +398,43 @@ boolean settingsLocked[3];
 //Bank Settings
 int bankSelect = 1;
 int bank[NUM_BANKS][35];
+
+class keyNode
+{
+	public:
+	keyNode()
+	{
+		keyValue = 0;
+		nextNode = NULL;
+	}
+	
+	uint8_t getValue()
+	{
+		return keyValue;
+	}
+	
+	void setValue(uint8_t value)
+	{
+		keyValue = value;
+	}
+	
+	void setNextNode(keyNode *node)
+	{
+		nextNode = node;
+	}
+	
+	keyNode* getNextNode()
+	{
+		return nextNode;
+	}
+	
+	private:
+	uint8_t keyValue;
+	keyNode* nextNode;	
+};
+
+keyNode* firstNode = NULL;
+keyNode* latestNode = NULL;
 
 void setup()
 {
@@ -424,6 +472,13 @@ void setup()
 	//disable interrupts to avoid timing distortion
 	cbi (TIMSK0,TOIE0);              // disable Timer0 !!! delay() is now not available
 	sbi (TIMSK2,TOIE2);              // enable Timer2 Interrupt
+	
+	#if FASTADC
+	// set prescale to 16
+	sbi(ADCSRA,ADPS2) ;
+	cbi(ADCSRA,ADPS1) ;
+	cbi(ADCSRA,ADPS0) ;
+	#endif
 }
 
 void loop()
@@ -437,16 +492,16 @@ void loop()
 	lockBtnCheck();
 	extraBtnCheck();
 
-	if((millisecs - arpTimer > arpSpeed) && notePlaying && arpSpeed > 0 && !arpMode) //handle the arpeggio
+	if((millisecs - seqTimer > arpSpeed) && notePlaying && seqMaxNoteCount > 0 && seqMode == SEQ_PLAYING) //handle the arpeggio
 	{
-		noteSelect = rootKey + arp[arpCount];
-		arpTimer = millisecs;
+		noteSelect = rootKey + seq[seqNoteIndex];
+		seqTimer = millisecs;
 
-		arpCount++; //move through the array
+		seqNoteIndex++; //move through the array
 
-		if(arpCount >= arpMaxCount)
+		if(seqNoteIndex >= seqMaxNoteCount)
 		{
-			arpCount = 0;
+			seqNoteIndex = 0;
 		}
 		
 		if(noteSync)
@@ -465,7 +520,7 @@ void loop()
 				cents = map(analogRead(CENTS_PIN),ADC_MIN,ADC_MAX,-CENTS_MAX,CENTS_MAX);  //from -100 to 100 cents
 				semis = map(analogRead(SEMIS_PIN),ADC_MIN,ADC_MAX,-12,12);  //from -12 to 12 semitone
 				octaveShift = map(analogRead(OCTAVE_PIN),ADC_MIN,ADC_MAX,-OCT_MAX, OCT_MAX);  //from -2 to 2 octaves
-				weight2 = map(analogRead(WEIGHT_PIN),ADC_MAX,ADC_MIN,0,WEIGHT_MAX);  //weight of osc2 in summation
+				weight2 = map(analogRead(WEIGHT_PIN),ADC_MAX,ADC_MIN,WEIGHT_MAX,0);  //weight of osc2 in summation
 			}
 			break;
 			
@@ -478,15 +533,15 @@ void loop()
 				centsRange = map(lfoAmnt,ADC_MIN,ADC_MAX,0,CENTS_MAX);
 				semisRange = map(lfoAmnt,ADC_MIN,ADC_MAX,0,SEMIS_MAX);
 				octaveRange = map(lfoAmnt,ADC_MIN,ADC_MAX,0,3);
-				phaseRange = map(lfoAmnt,ADC_MIN,ADC_MAX,0,128);
+				phaseRange = map(lfoAmnt,ADC_MIN,ADC_MAX,0,255);
 			}
 			break;
 			
 			case MENU_EXTRA:
 			if(!settingsLocked[MENU_EXTRA])
 			{
-				phase = map(analogRead(OCTAVE_PIN), ADC_MIN, ADC_MAX, -128, 128);	
-				arpSpeed = 1000.0/map(analogRead(WEIGHT_PIN),ADC_MIN,ADC_MAX,1,50); //arpSpeed is measured in milliseconds not hertz
+				//phase = map(analogRead(OCTAVE_PIN), ADC_MIN, ADC_MAX, -127, 127);
+				arpSpeed = map(analogRead(WEIGHT_PIN),ADC_MIN,ADC_MAX,500,50); //arpSpeed is measured in milliseconds not hertz
 			}
 			break;
 		}
@@ -646,8 +701,9 @@ void bankBtnCheck()
 		{
 			btnBankPressed = true;
 
-			if(settingsMenu == MENU_NORM)
+			switch(settingsMenu)
 			{
+				case MENU_NORM:
 				bankSelect++;
 				if(bankSelect > NUM_BANKS)
 				{
@@ -656,6 +712,28 @@ void bankBtnCheck()
 
 				loadPreset(bankSelect);
 				normalSettingsLCD();
+				break;
+				
+				case MENU_EXTRA:
+				if(seqMode == SEQ_SAMPLE)
+				{
+					seqMode = SEQ_PLAYING;
+				}
+				else if(seqMode == SEQ_PLAYING | seqMode == SEQ_STOPPED)
+				{
+					seqMode = SEQ_SAMPLE;
+					
+					seqMaxNoteCount = 0; //reset the number of notes
+					seqNoteIndex = 0;
+					
+					for(int i = 0;i < MAX_SEQ_NOTES; i++)
+					{
+						seq[i] = 0; //reset each note
+					}
+				}
+				
+				seqUpdate();
+				break;
 			}
 		}
 	}
@@ -680,10 +758,7 @@ void saveBtnCheck()
 			switch(settingsMenu)
 			{
 				case MENU_NORM:
-				if(!settingsLocked[MENU_NORM])
-				{
-					savePreset(bankSelect);
-				}
+				savePreset(bankSelect);
 				break;
 				
 				case MENU_LFO:
@@ -698,18 +773,20 @@ void saveBtnCheck()
 				case MENU_EXTRA:
 				if(!settingsLocked[MENU_EXTRA])
 				{
-					arpMode = !arpMode;
-
-					arpUpdate();
-
-					if(arpMode) //reset the previous
+					if(seqMode == SEQ_STOPPED)
 					{
-						arpMaxCount = 0; //reset the number of notes
-						for(int i = 0;i < MAX_arp_NOTES;i++)
-						{
-							arp[i] = 0; //reset each note
-						}
+						seqMode = SEQ_PLAYING;
 					}
+					else if(seqMode == SEQ_PLAYING)
+					{
+						seqMode = SEQ_STOPPED;
+					}
+					else
+					{
+						seqMode = SEQ_STOPPED;
+					}
+
+					seqUpdate();
 				}
 				break;
 			}
@@ -791,23 +868,17 @@ void serialEvent()
 		data1 = data;
 	}
 	
-	//Avoid polychannel aftertouch
-	if(currentCommand != PC)
-	{
-		while(!Serial.available());
-		
-		data2 = Serial.read();
-	}
-	else
-	{
-		return;
-	}
+	while(!Serial.available());
+	
+	data2 = Serial.read();
 	
 	
 	switch(currentCommand)
 	{
 		case NOTE_ON:
 		noteSelect = data1 - MIDI_OFFSET;
+		
+		//addNote(noteSelect);
 		
 		if(!notePlaying && noteSync)
 		{
@@ -816,23 +887,23 @@ void serialEvent()
 
 		notePlaying = true;
 
-		if(arpMode) //add notes to the arp array
+		if(seqMode == SEQ_SAMPLE) //add notes to the arp array
 		{
-			if(arpMaxCount == 0) //if just starting arp mode
+			if(seqMaxNoteCount == 0) //if just starting arp mode
 			{
 				rootKey = noteSelect; //get new root key, all notes in array are relative to this value
 			}
 			else
 			{
-				arp[arpMaxCount] = noteSelect - rootKey; //calculate relative note
+				seq[seqMaxNoteCount] = noteSelect - rootKey; //calculate relative note
 			}
 			
-			arpMaxCount++; //increment number of notes in arp array
+			seqMaxNoteCount++; //increment number of notes in arp array
 
-			if(arpMaxCount > MAX_arp_NOTES)
+			if(seqMaxNoteCount > MAX_SEQ_NOTES)
 			{
-				arpMode = false;
-				arpUpdate();
+				seqMode = SEQ_STOPPED;
+				seqUpdate();
 			}
 		}
 		else
@@ -840,13 +911,21 @@ void serialEvent()
 			rootKey = noteSelect; //find the new root key to play the arpeggio
 		}
 
-		arpTimer = millisecs;
-		//arpCount = 0; //reset arp count
 		break;
 		
 		case NOTE_OFF:
+		//removeNote(rootKey);
+		
 		if((rootKey == data1 - MIDI_OFFSET || noteSelect == data1 - MIDI_OFFSET))
 		{
+			phaccu2 = 0;
+			phaccu1 = 0;
+			
+			seqNoteIndex = 0;
+			seqTimer = millisecs;
+			
+			boolean keyFound = false;
+			
 			notePlaying = false;
 		}
 		break;
@@ -940,71 +1019,7 @@ void Setup_timer2() {
 
 
 ISR(TIMER2_OVF_vect) {
-	if(notePlaying)
-	{
-		phaccu1=phaccu1+tword_mOsc1; // soft DDS, phase accu with 32 bits
-		byte icnt1=phaccu1 >> 24;     // use upper 8 bits for phase accu as frequency information
-
-		phaccu2=phaccu2+tword_mOsc2;
-		byte icnt2=phaccu2 >> 24;
-		
-		if(!xorAddition)
-		{
-			byte osc2;
-			
-			if(osc2WaveForm != WAVE_NOISE)
-			{
-				osc2 = ((pgm_read_byte(waveTable + icnt2 + (phase + dPhase) + (osc2WaveForm<<8))*weight2)>>4);
-			}
-			else
-			{
-				osc2 += ((pgm_read_byte(waveTable + icnt2 + (osc2WaveForm<<8)))*weight2)>>4;
-			}
-			
-			byte osc1 = ((pgm_read_byte(waveTable + icnt1 + (osc1WaveForm<<8))*weight1)>>4); //second oscillator
-			
-			OCR2A = ((osc1 + osc2)); //sum the two with oscillators
-		}
-		else
-		{
-			OCR2A = pgm_read_byte(waveTable + icnt1 + (osc1WaveForm<<8)) ^ pgm_read_byte(waveTable + icnt2 + (phase + dPhase) + (osc2WaveForm<<8));
-		}
-		
-	}
-
-	phaccu3 = phaccu3 + tword_mLFO;
-	byte lfo = ((pgm_read_byte(waveTable + (phaccu3 >> 24) + (lfoWaveForm<<8))));
-
-	dSemis = 0;
-	dCents = 0;
-	dOctave = 0;
-	dPhase = 0;
 	
-	if(lfoWaveForm  != WAVE_FLAT)
-	{
-		switch(lfoRoute)
-		{
-			case ROUTE_NONE:
-			break;
-
-			case ROUTE_SEMI:
-			dSemis = lfo - 128;
-			break;
-
-			case ROUTE_CENT:
-			dCents = lfo - 128;
-			break;
-
-			case ROUTE_OCT:
-			dOctave = lfo - 128;
-			break;
-			
-			case ROUTE_PHASE:
-			dPhase = lfo - 128;
-			break;
-		}
-	}
-
 	smallTimer++; //increment small timer because we don't have access to timer0
 
 	if(smallTimer >= 31)
@@ -1012,19 +1027,76 @@ ISR(TIMER2_OVF_vect) {
 		smallTimer = 0;
 		millisecs++;
 	}
+	
+	if(!notePlaying)
+	{
+		return;
+	}
+	
+	phaccu1=phaccu1+tword_mOsc1; // soft DDS, phase accu with 32 bits
+	//byte icnt1=(phaccu1 >> 24);     // use upper 8 bits for phase accu as frequency information
+
+	phaccu2=phaccu2+tword_mOsc2;
+	//byte icnt2=(phaccu2 >> 24);
+	
+	if(!xorAddition)
+	{
+		if(osc2WaveForm != WAVE_NOISE)
+		{
+			osc2 = (pgm_read_byte(waveTable + (osc2WaveForm<<8) + ((phaccu2 >> 24) + phase))*weight2)>>4;
+		}
+		else
+		{
+			osc2 += ((pgm_read_byte(waveTable + (phaccu2 >> 24) + (osc2WaveForm<<8)))*weight2)>>4;
+		}
+		
+		osc1 = ((pgm_read_byte(waveTable + (phaccu1 >> 24) + (osc1WaveForm<<8))*weight1)>>4); //second oscillator
+		
+		OCR2A = ((osc1 + osc2)); //sum the two with oscillators
+	}
+	else
+	{
+		OCR2A = pgm_read_byte(waveTable + (phaccu1 >> 24) + (osc1WaveForm<<8)) ^ pgm_read_byte(waveTable + (osc2WaveForm<<8) + ((phaccu2 >> 24) + phase));
+	}
+
+	phaccu3 = phaccu3 + tword_mLFO;
+	lfo = ((pgm_read_byte(waveTable + (phaccu3 >> 24) + (lfoWaveForm<<8))));
 }
 
 void noteUpdate()
-{	
-	int dC = map(dCents,-128,128,-centsRange,centsRange);
-	int dS = map(dSemis,-128,128,-semisRange,semisRange);
-	int dO = map(dOctave,-128,128,-octaveRange,octaveRange);
+{
+	switch(lfoRoute)
+	{
+		case ROUTE_NONE:
+		break;
+		
+		case ROUTE_CENT:
+		dCents = lfo - 128;
+		break;
+		
+		case ROUTE_SEMI:
+		dSemis = lfo - 128;
+		break;
+		
+		case ROUTE_PHASE:
+		dPhase = lfo;
+		break;
+		
+		case ROUTE_OCT:
+		dOctave = lfo - 128;
+		break;
+	}
+	
+	dCents = map(dCents,-128,128,-centsRange,centsRange);
+	dSemis = map(dSemis,-128,128,-semisRange,semisRange);
+	dOctave = map(dOctave,-128,128,-octaveRange,octaveRange);
+	phase = map(dPhase, 0, 255, 0, phaseRange);
 
-	centMultiplier = pow(2.0,(cents + dC)/1200.0); //calculate the cents, multiplied to note frequency
+	centMultiplier = pow(2.0,(cents + dCents)/1200.0); //calculate the cents, multiplied to note frequency
 
 	if(noteSelect < 0) //negative note values are bad
 	{
-		noteSelect = 0;
+		notePlaying = false;
 	}
 
 	if(osc2WaveForm == WAVE_FLAT) //ignore the second osc
@@ -1035,8 +1107,13 @@ void noteUpdate()
 	weight1 = WEIGHT_MAX - weight2;
 
 	tword_mOsc1=pow(2,32)*keyFreq[noteSelect]/refclk;  // calculate DDS new tuning word
-	tword_mOsc2=pow(2,32)*(keyFreq[noteSelect + semis + dS]*pow(2,octaveShift + dO)*centMultiplier)/refclk; //cents affect osc2
+	tword_mOsc2=pow(2,32)*(keyFreq[noteSelect + semis + dSemis]*pow(2,octaveShift + dOctave)*centMultiplier)/refclk; //cents affect osc2
 	tword_mLFO=pow(2,32)*lfoFreq/refclk;
+	
+	dPhase = 0;
+	dSemis = 0;
+	dOctave = 0;
+	dCents = 0;
 }
 
 void savePreset(int preset)
@@ -1055,12 +1132,12 @@ void savePreset(int preset)
 	bank[preset - 1][10] = semisRange;
 
 	//all the arp values
-	for(int i = 0;i < MAX_arp_NOTES;i++)
+	for(int i = 0;i < MAX_SEQ_NOTES;i++)
 	{
-		bank[preset - 1][11 + i] = arp[i];
+		bank[preset - 1][11 + i] = seq[i];
 	}
 
-	bank[preset - 1][31] = arpMaxCount;
+	bank[preset - 1][31] = seqMaxNoteCount;
 	bank[preset - 1][32] = arpSpeed;
 	bank[preset - 1][33] = xorAddition;
 	bank[preset - 1][34] = noteSync;
@@ -1081,14 +1158,15 @@ void loadPreset(int preset)
 	centsRange = bank[preset - 1][9];
 	semisRange = bank[preset - 1][10];
 
-	for(int i = 0;i < MAX_arp_NOTES;i++)
+	for(int i = 0;i < MAX_SEQ_NOTES;i++)
 	{
-		arp[i] = bank[preset - 1][11 + i];
+		seq[i] = bank[preset - 1][11 + i];
 	}
 
-	arpMaxCount = bank[preset - 1][31];
+	seqMaxNoteCount = bank[preset - 1][31];
 	arpSpeed = bank[preset - 1][32];
-
+	seqMode = SEQ_STOPPED;
+	
 	xorAddition = bank[preset - 1][33];
 	noteSync = bank[preset - 1][34];
 
@@ -1117,7 +1195,7 @@ void extraSettingsLCD()
 {
 	xorUpdate();
 	legatoUpdate();
-	arpUpdate();
+	seqUpdate();
 	lockUpdate();
 }
 
@@ -1354,7 +1432,7 @@ void legatoUpdate()
 	}
 	else
 	{
-		printStr += "OFF";
+		printStr += "OFF ";
 	}
 	
 	printStr.toCharArray(buffer, 13);
@@ -1367,7 +1445,7 @@ void bankUpdate()
 {
 	String printStr = "BANK: ";
 	char buffer[13];
-		
+	
 	printStr += bankSelect;
 	printStr += "     ";
 	
@@ -1377,18 +1455,24 @@ void bankUpdate()
 	LCDString(buffer);
 }
 
-void arpUpdate()
+void seqUpdate()
 {
-	String printStr = "ARP: ";
+	String printStr = "SEQ: ";
 	char buffer[13];
 	
-	if(arpMode)
+	switch(seqMode)
 	{
-		printStr += "SAMPLE ";
-	}
-	else
-	{
+		case SEQ_STOPPED:
+		printStr += "STOPPED";
+		break;
+		
+		case SEQ_PLAYING:
 		printStr += "PLAYING";
+		break;
+		
+		case SEQ_SAMPLE:
+		printStr += "SAMPLE ";
+		break;
 	}
 	
 	printStr.toCharArray(buffer, 13);
@@ -1440,6 +1524,51 @@ void lockUpdate()
 void clearLCD()
 {
 	LCDClear();
+}
+
+void addNote(uint8_t keyValue)
+{
+	keyNode* node = new keyNode();
+	node->setValue(keyValue);
+	
+	if(firstNode == NULL)
+	{
+		firstNode = node;
+		
+		return;
+	}
+	
+	keyNode* curNode = firstNode;
+	
+	while(curNode != NULL)
+	{
+		curNode = curNode->getNextNode();
+	}
+	
+	curNode->setNextNode(node);
+}
+
+void removeNote(uint8_t keyValue)
+{
+	if(firstNode->getValue() == keyValue)
+	{
+		delete firstNode;
+		firstNode = NULL;
+		
+		return;
+	}
+	
+	keyNode* prevNode = firstNode;
+	keyNode* curNode = firstNode;
+	
+	while(curNode->getValue() != keyValue)
+	{
+		prevNode = curNode;
+		curNode = curNode->getNextNode();
+	}
+	
+	delete curNode;
+	prevNode->setNextNode(NULL);
 }
 
 void gotoXY(int x, int y) {
