@@ -14739,21 +14739,21 @@ Standard 8.5x11 US Letter frame</description>
 </packages>
 <symbols>
 <symbol name="VREG-ADJ">
-<wire x1="-5.08" y1="-2.54" x2="0" y2="-2.54" width="0.4064" layer="94"/>
-<wire x1="0" y1="-2.54" x2="5.08" y2="-2.54" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="-2.54" x2="5.08" y2="2.54" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="5.08" y2="5.08" width="0.4064" layer="94"/>
-<wire x1="5.08" y1="5.08" x2="-5.08" y2="5.08" width="0.4064" layer="94"/>
-<wire x1="-5.08" y1="5.08" x2="-5.08" y2="2.54" width="0.4064" layer="94"/>
-<text x="0.635" y="-5.08" size="1.524" layer="95" font="vector" ratio="15">&gt;NAME</text>
-<pin name="IN" x="-7.62" y="2.54" visible="pin" length="point" direction="pwr"/>
-<pin name="GND" x="0" y="-5.08" visible="pin" length="point" direction="in" rot="R90"/>
-<pin name="OUT" x="7.62" y="2.54" visible="pin" length="point" direction="pwr" rot="R180"/>
-<text x="-5.08" y="5.08" size="1.524" layer="96" font="vector" ratio="15">&gt;VALUE</text>
-<wire x1="-5.08" y1="2.54" x2="-5.08" y2="-2.54" width="0.4064" layer="94"/>
-<wire x1="-7.62" y1="2.54" x2="-5.08" y2="2.54" width="0.254" layer="94"/>
-<wire x1="5.08" y1="2.54" x2="7.62" y2="2.54" width="0.254" layer="94"/>
-<wire x1="0" y1="-2.54" x2="0" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-3.81" x2="0" y2="-3.81" width="0.4064" layer="94"/>
+<wire x1="0" y1="-3.81" x2="5.08" y2="-3.81" width="0.4064" layer="94"/>
+<wire x1="5.08" y1="-3.81" x2="5.08" y2="1.27" width="0.4064" layer="94"/>
+<wire x1="5.08" y1="1.27" x2="5.08" y2="3.81" width="0.4064" layer="94"/>
+<wire x1="5.08" y1="3.81" x2="-5.08" y2="3.81" width="0.4064" layer="94"/>
+<wire x1="-5.08" y1="3.81" x2="-5.08" y2="1.27" width="0.4064" layer="94"/>
+<text x="0.635" y="-6.35" size="1.524" layer="95" font="vector" ratio="15">&gt;NAME</text>
+<pin name="IN" x="-7.62" y="1.27" length="point" direction="pwr"/>
+<pin name="GND" x="0" y="-6.35" length="point" direction="in" rot="R90"/>
+<pin name="OUT" x="7.62" y="1.27" length="point" direction="pwr" rot="R180"/>
+<text x="-5.08" y="3.81" size="1.524" layer="96" font="vector" ratio="15">&gt;VALUE</text>
+<wire x1="-5.08" y1="1.27" x2="-5.08" y2="-3.81" width="0.4064" layer="94"/>
+<wire x1="-7.62" y1="1.27" x2="-5.08" y2="1.27" width="0.254" layer="94"/>
+<wire x1="5.08" y1="1.27" x2="7.62" y2="1.27" width="0.254" layer="94"/>
+<wire x1="0" y1="-3.81" x2="0" y2="-6.35" width="0.254" layer="94"/>
 </symbol>
 <symbol name="9V">
 <wire x1="0.762" y1="1.27" x2="0" y2="2.54" width="0.254" layer="94"/>
@@ -15032,9 +15032,9 @@ Standard 8.5x11 US Letter frame</description>
 <wire x1="-1.27" y1="0" x2="0" y2="0" width="0.127" layer="21"/>
 <wire x1="0" y1="1.27" x2="0" y2="0" width="0.127" layer="21"/>
 <wire x1="0" y1="0" x2="1.27" y2="0" width="0.127" layer="21"/>
-<pad name="1" x="-2.54" y="-2.54" drill="1" diameter="1.8796" rot="R180"/>
-<pad name="2" x="0" y="0" drill="1" diameter="1.8796" rot="R180"/>
-<pad name="3" x="2.54" y="-2.54" drill="1" diameter="1.8796" rot="R180"/>
+<pad name="1" x="-2.54" y="0" drill="1" diameter="1.8796" rot="R180"/>
+<pad name="2" x="0" y="2.54" drill="1" diameter="1.8796" rot="R180"/>
+<pad name="3" x="2.54" y="0" drill="1" diameter="1.8796" rot="R180"/>
 <text x="-2.54" y="3.81" size="1.27" layer="25" font="vector" ratio="15">&gt;NAME</text>
 </package>
 <package name="CAP-0402">
@@ -15230,6 +15230,7 @@ chip</description>
 </devices>
 </deviceset>
 <deviceset name="RES" prefix="R" uservalue="yes">
+<description>Part # blah Digikey</description>
 <gates>
 <gate name="G$1" symbol="RESISTOR" x="0" y="0"/>
 </gates>
@@ -16886,7 +16887,7 @@ Sam Stratter
 <pinref part="U1" gate="G$1" pin="GND"/>
 <pinref part="GND1" gate="GND" pin="GND"/>
 <wire x1="40.64" y1="153.67" x2="40.64" y2="156.21" width="0.1524" layer="91"/>
-<wire x1="40.64" y1="156.21" x2="40.64" y2="158.75" width="0.1524" layer="91"/>
+<wire x1="40.64" y1="156.21" x2="40.64" y2="157.48" width="0.1524" layer="91"/>
 <wire x1="16.51" y1="156.21" x2="40.64" y2="156.21" width="0.1524" layer="91"/>
 <junction x="40.64" y="156.21"/>
 <pinref part="J1" gate="G$1" pin="2"/>
@@ -17070,7 +17071,7 @@ Sam Stratter
 <net name="5V" class="1">
 <segment>
 <pinref part="U1" gate="G$1" pin="OUT"/>
-<wire x1="48.26" y1="166.37" x2="49.53" y2="166.37" width="0.1524" layer="91"/>
+<wire x1="48.26" y1="165.1" x2="49.53" y2="166.37" width="0.1524" layer="91"/>
 <wire x1="49.53" y1="166.37" x2="49.53" y2="171.45" width="0.1524" layer="91"/>
 <pinref part="U$2" gate="G$1" pin="5V"/>
 <wire x1="49.53" y1="166.37" x2="50.8" y2="166.37" width="0.1524" layer="91"/>
@@ -17607,7 +17608,7 @@ Sam Stratter
 <segment>
 <pinref part="D2" gate="G$1" pin="C"/>
 <pinref part="U1" gate="G$1" pin="IN"/>
-<wire x1="31.75" y1="166.37" x2="33.02" y2="166.37" width="0.1524" layer="91"/>
+<wire x1="31.75" y1="166.37" x2="33.02" y2="165.1" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
