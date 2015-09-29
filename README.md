@@ -1,28 +1,21 @@
-Overview
----
-This repository includes the Eagle design files (schematics and layout) for our [MIDI Synthesizer Kit][1].  The Kit is based 
-on the ATMega328 Microcontroller, which we have programmed to read input data from a series of potentiometers and tactile buttons, 
-and to produce synthesized sound through an onboard audio jack.
+## Ai\_Synth\_AVR
 
-The firmware files along with code samples are also included in this repository.
+PCB design files (EAGLE) and example Arduino firmware for a MIDI Synthesizer
+based on the ATMega328 MCU.
 
-This kit was designed by [Sam Stratter][] ([@humanHardDrive]).
+## Description
 
+For more details, check out the product page at:
 
-Product page
----
-Please consider buying products from Acrobotic to help fund future Open-Source projects like this! We'll always put our best effort in every project, and release all our design files and code for you to use.
+   * https://acrobotic.com/kit-00002
 
-[Tutorials, technical details, and more information about this product can be found here: http://acrobotic.com/catalog/product/view/id/51][1]
+Designed by ACROBOTIC Industries.  Please consider buying products from us to 
+help fund future Open-Source projects like this! We’ll always put our best 
+effort in every project, and release all our design files and code for you to 
+use. 
 
-License Information
----
+## License
 
-All contents of this repository are licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
-
-![alt Creative Commons License](http://i.creativecommons.org/l/by-sa/3.0/88x31.png)
-
-[1]: http://acrobotic.com/catalog/product/view/id/51 "MIDI Synthesizer"
-[Sam Stratter]: http://www.youtube.com/user/humanHardDrive "Sam Stratter"
-[@humanHardDrive]: https://github.com/humanHardDrive "@humanHardDrive"
-
+Released under the Creative Commons Attribution, Share-Alike license. Please 
+check LICENSE.txt for more information. All text above must be included in any 
+redistribution.
