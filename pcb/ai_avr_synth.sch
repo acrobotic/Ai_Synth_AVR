@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="7.1.0">
+<eagle version="6.5.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -12365,7 +12365,7 @@ This library includes crystals, resonators, etc.
 <label x="71.12" y="71.12" size="1.27" layer="95" font="vector" ratio="10" rot="R270" xref="yes"/>
 </segment>
 </net>
-<net name="RXI" class="0">
+<net name="TXD" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="PD0(RXD)"/>
 <wire x1="185.42" y1="140.97" x2="187.96" y2="140.97" width="0.1524" layer="91"/>
@@ -12387,7 +12387,7 @@ This library includes crystals, resonators, etc.
 <label x="34.29" y="85.09" size="1.27" layer="95" font="vector" ratio="10" xref="yes"/>
 </segment>
 </net>
-<net name="TXO" class="0">
+<net name="RXD" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="PD1(TXD)"/>
 <wire x1="185.42" y1="138.43" x2="187.96" y2="138.43" width="0.1524" layer="91"/>
